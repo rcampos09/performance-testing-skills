@@ -7,7 +7,7 @@ languages.
 ## Install
 
 ```bash
-npx skills add rcampos/gatling-best-practices
+npx skills add rcampos09/performance-testing-skills
 ```
 
 ## What it does
