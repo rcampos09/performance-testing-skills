@@ -80,9 +80,13 @@ fi
 if $HAS_NPM; then
   title "npm (package.json)"
 
-  grep -q "@gatling.io/sdk" "${PROJECT_DIR}/package.json" \
-    && pass "@gatling.io/sdk found in package.json" \
-    || fail "Missing dependency: @gatling.io/sdk"
+  grep -q "@gatling.io/core" "${PROJECT_DIR}/package.json" \
+    && pass "@gatling.io/core found in package.json" \
+    || fail "Missing dependency: @gatling.io/core"
+
+  grep -q "@gatling.io/http" "${PROJECT_DIR}/package.json" \
+    && pass "@gatling.io/http found in package.json" \
+    || fail "Missing dependency: @gatling.io/http"
 
   grep -q "@gatling.io/cli" "${PROJECT_DIR}/package.json" \
     && pass "@gatling.io/cli found in package.json" \
@@ -110,15 +114,16 @@ for lang in java kotlin scala; do
 done
 
 JS_SRC_FOUND=false
-for dir in "src/simulations" "src/gatling/simulations"; do
-  if [[ -d "${PROJECT_DIR}/${dir}" ]]; then
-    COUNT=$(find "${PROJECT_DIR}/${dir}" \( -name "*.ts" -o -name "*.js" \) 2>/dev/null | wc -l | tr -d ' ')
-    [[ "$COUNT" -gt 0 ]] && { pass "Found ${COUNT} simulation(s) in ${dir}/"; JS_SRC_FOUND=true; }
+if [[ -d "${PROJECT_DIR}/src" ]]; then
+  COUNT=$(find "${PROJECT_DIR}/src" \( -name "*.gatling.ts" -o -name "*.gatling.js" \) -not -path "*/node_modules/*" 2>/dev/null | wc -l | tr -d ' ')
+  if [[ "$COUNT" -gt 0 ]]; then
+    pass "Found ${COUNT} simulation(s) in src/ (*.gatling.js / *.gatling.ts)"
+    JS_SRC_FOUND=true
   fi
-done
+fi
 
 ! $JVM_SRC_FOUND && ! $JS_SRC_FOUND && \
-  warn "No simulation source files found. Create one in src/test/java (or scala/kotlin) or src/simulations/"
+  warn "No simulation source files found. Create one in src/test/java (or scala/kotlin) or src/*.gatling.js (JS/TS)"
 
 # ── Resource checks ───────────────────────────────────────────────────────────
 title "Resources"

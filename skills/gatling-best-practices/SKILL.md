@@ -232,6 +232,7 @@ val httpProtocol = http
 
 ```typescript
 // TypeScript / JavaScript
+// File must be named *.gatling.ts / *.gatling.js and placed directly in src/
 import { simulation, scenario, rampUsers, csv, global } from "@gatling.io/core";
 import { http, status, jsonPath } from "@gatling.io/http";
 
