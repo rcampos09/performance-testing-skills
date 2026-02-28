@@ -7,7 +7,11 @@ professional Gatling load test simulations across all five officially supported 
 ## Install
 
 ```bash
+# Install all skills in this repo
 npx skills add rcampos09/performance-testing-skills
+
+# Install only gatling-best-practices
+npx skills add rcampos09/performance-testing-skills --skill gatling-best-practices
 ```
 
 ## What it does
