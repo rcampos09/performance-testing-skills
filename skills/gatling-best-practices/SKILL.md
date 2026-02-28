@@ -277,11 +277,15 @@ val httpProtocol = http
 ```typescript
 // TypeScript / JavaScript
 // File must be named *.gatling.ts / *.gatling.js and placed directly in src/
-import { simulation, scenario, rampUsers, csv, global } from "@gatling.io/core";
-import { http, status, jsonPath } from "@gatling.io/http";
+import {
+  simulation, scenario, rampUsers, csv, global,
+  StringBody, jsonPath, getEnvironmentVariable,  // ← jsonPath and StringBody live here, NOT in @gatling.io/http
+} from "@gatling.io/core";
+import { http, status } from "@gatling.io/http";  // ← do NOT import jsonPath from here — it is not exported
 
+// process.env is NOT available at GraalVM runtime — use getEnvironmentVariable instead
 const httpProtocol = http
-  .baseUrl(process.env.BASE_URL ?? "https://api.example.com")
+  .baseUrl(getEnvironmentVariable("BASE_URL", "https://api.example.com"))
   .acceptHeader("application/json");
 ```
 
@@ -329,8 +333,10 @@ ScenarioBuilder scn = scenario("My Flow")
 const scn = scenario("My Flow")
   .feed(userFeeder)
   .exec(http("POST Login").post("/auth/login")
-    .body(`{"username":"#{username}","password":"#{password}"}`)
+    .body(StringBody('{"username":"#{username}","password":"#{password}"}'))  // ← StringBody required; raw string causes NullPointerException
+    .asJson()                                                                   // ← sets Content-Type: application/json
     .check(status().is(200))
+    .check(jsonPath("$.token").exists())
     .check(jsonPath("$.token").saveAs("token")))
   .pause(1, 3)
   .exec(http("GET Data").get("/data")
