@@ -64,14 +64,14 @@ metadata:                 # optional
 Skills are installed via the `skills` CLI from [skills.sh](https://skills.sh):
 
 ```bash
-# Install a single skill by owner/repo (once published to GitHub)
-npx skills add rcampos/gatling-scenario-performance-test
+# Install all skills in the repo
+npx skills add rcampos09/performance-testing-skills
 
 # Install a specific skill by name within the repo
-npx skills add rcampos/gatling-scenario-performance-test --skill gatling-best-practices
+npx skills add rcampos09/performance-testing-skills --skill gatling-best-practices
 
 # Opt out of anonymous telemetry
-DISABLE_TELEMETRY=1 npx skills add rcampos/gatling-scenario-performance-test
+DISABLE_TELEMETRY=1 npx skills add rcampos09/performance-testing-skills
 ```
 
 The CLI discovers skills automatically from the `skills/<name>/SKILL.md` path convention.
