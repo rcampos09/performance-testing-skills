@@ -1,0 +1,133 @@
+{
+  "skill_name": "gatling-best-practices",
+  "evals": [
+    {
+      "id": 1,
+      "name": "new-java-maven-rest-api",
+      "prompt": "I need to write a load test for our login API in Java with Maven. The endpoint is POST /api/v1/auth/login and takes a JSON body with username and password. We expect around 50 concurrent users at peak and our SLA is p95 under 800ms. I have a CSV file with test users.",
+      "expected_output": "A complete runnable Java simulation class following the 5-block pattern (Protocol, Feeder, Scenario with pause, Injection with ramp not atOnceUsers, Assertions including p95 < 800ms). Plus the exact mvn gatling:test command to run it.",
+      "assertions": [
+        {
+          "name": "uses_5_block_pattern",
+          "description": "Simulation has all 5 blocks: HttpProtocolBuilder, FeederBuilder, ScenarioBuilder, injectOpen/injectClosed, assertions()"
+        },
+        {
+          "name": "has_pause_between_requests",
+          "description": "Scenario includes at least one pause() call"
+        },
+        {
+          "name": "extracts_token_with_saveAs",
+          "description": "Login response uses .check(jsonPath(...).saveAs(...)) to extract a token or session ID"
+        },
+        {
+          "name": "uses_ramp_not_atOnce",
+          "description": "Injection profile uses rampUsers() not atOnceUsers() for 50 users"
+        },
+        {
+          "name": "assertion_includes_p95_sla",
+          "description": "Assertions include percentile(95).lt(800) matching the stated SLA"
+        },
+        {
+          "name": "includes_run_command",
+          "description": "Response includes the exact mvn gatling:test command with simulationClass parameter"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "fix-broken-simulation",
+      "prompt": "My Gatling simulation keeps failing. All users get errors right after login and I see 'No attribute named token is defined' in the logs. Here's my scenario:\n\nscenario(\"Browse\")\n  .exec(http(\"Login\").post(\"/login\").body(StringBody(\"{\\\"user\\\":\\\"alice\\\"}\")))\n  .exec(http(\"Browse\").get(\"/products\").header(\"Authorization\", \"Bearer #{token}\"))\n\nWhat's wrong and how do I fix it?",
+      "expected_output": "Identifies the root cause (missing .check(jsonPath('$.token').saveAs('token')) on the Login request), explains why (session variable not extracted so #{token} is undefined), and delivers the corrected scenario code.",
+      "assertions": [
+        {
+          "name": "identifies_root_cause",
+          "description": "Explains that the Login request is missing a .check() to extract and save the token into the session"
+        },
+        {
+          "name": "provides_corrected_code",
+          "description": "Delivers fixed code with .check(jsonPath('$.token').saveAs('token')) on the Login exec"
+        },
+        {
+          "name": "explains_why",
+          "description": "Explains that #{token} is a session variable that must be populated via saveAs() before it can be used"
+        },
+        {
+          "name": "adds_pause",
+          "description": "Fixed scenario includes a pause() between login and browse"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "migrate-from-jmeter",
+      "prompt": "We want to migrate our JMeter test to Gatling TypeScript. The JMeter test has: 200 users, 2-minute ramp-up, then holds for 5 minutes. It tests our e-commerce checkout flow: homepage → search products (search term from CSV) → view product detail → add to cart → checkout (needs auth token from login). Our SLA is p95 under 2s for checkout. What does the Gatling simulation look like?",
+      "expected_output": "A complete TypeScript simulation with: CSV feeder for search terms, full scenario chain with pauses, rampUsers(200).during(120) + constantUsersPerSec for hold phase, assertions with p95 < 2000ms on the checkout step, and the npx gatling run command.",
+      "assertions": [
+        {
+          "name": "correct_injection_ramp_then_hold",
+          "description": "Injection uses rampUsers(200).during(120) followed by a constant phase of 5 minutes — matching the JMeter setup"
+        },
+        {
+          "name": "csv_feeder_for_search",
+          "description": "Includes a CSV feeder for search terms and uses #{searchTerm} or similar session variable in the search request"
+        },
+        {
+          "name": "full_scenario_chain",
+          "description": "Scenario covers all 5 steps: homepage, search, product detail, add to cart, checkout — with pauses between each"
+        },
+        {
+          "name": "token_extraction",
+          "description": "Login step extracts auth token via saveAs and injects it into subsequent requests"
+        },
+        {
+          "name": "checkout_sla_assertion",
+          "description": "Assertions include details('checkout' or similar).responseTime().percentile(95).lt(2000)"
+        },
+        {
+          "name": "typescript_syntax",
+          "description": "Output is valid TypeScript using @gatling.io/sdk imports, not Java syntax"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "new-kotlin-gradle-rest-api",
+      "prompt": "I need a Gatling load test in Kotlin with Gradle. The flow is: POST /api/v1/auth/login to get a token, then GET /api/v1/products using that token as Bearer. We expect 30 users ramped over 60 seconds and our SLA is p99 under 1000ms.",
+      "expected_output": "A complete Kotlin simulation class using the 5-block pattern with Kotlin-style DSL (val declarations, string templates, Double rates). Token extracted from login via saveAs, injected as Bearer in products request. rampUsers(30).during(60) injection. p99 assertion. Plus the gradle gatlingRun command.",
+      "assertions": [
+        {
+          "name": "kotlin_syntax",
+          "description": "Output uses Kotlin syntax: val declarations, string templates (${...}), Double literals for rates (e.g., 30.0), not Java syntax"
+        },
+        {
+          "name": "uses_5_block_pattern",
+          "description": "Simulation has all 5 blocks: HttpProtocolBuilder, FeederBuilder or feed, ScenarioBuilder, injectOpen, assertions()"
+        },
+        {
+          "name": "token_extraction",
+          "description": "Login response uses .check(jsonPath(\"$.token\").saveAs(\"token\")) to extract the auth token"
+        },
+        {
+          "name": "bearer_injection",
+          "description": "GET /products request includes .header(\"Authorization\", \"Bearer #{token}\")"
+        },
+        {
+          "name": "ramp_injection",
+          "description": "Injection uses rampUsers(30).during(60) not atOnceUsers"
+        },
+        {
+          "name": "p99_assertion",
+          "description": "Assertions include percentile(99).lt(1000) matching the stated SLA"
+        },
+        {
+          "name": "includes_gradle_command",
+          "description": "Response includes the gradle gatlingRun-<class> command"
+        }
+      ],
+      "files": []
+    }
+  ]
+}
