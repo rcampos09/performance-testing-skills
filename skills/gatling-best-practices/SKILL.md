@@ -60,9 +60,11 @@ bash scripts/scaffold.sh
 If the user asks you to generate the project directly (without running the
 script), skip to Step 3 and create the files manually following the 5-block
 pattern. For JS/TS projects, the minimum required files are:
-- `package.json` with `@gatling.io/cli`, `@gatling.io/core`, `@gatling.io/http`
+- `package.json` with `"type": "module"` and deps `@gatling.io/cli`, `@gatling.io/core`, `@gatling.io/http`
 - `src/<SimulationName>.gatling.js` (or `.gatling.ts`) — file must be in `src/`
   directly with the `.gatling.js` / `.gatling.ts` suffix (required by the CLI)
+- `tsconfig.json` — **TypeScript only**, required by `esbuild-plugin-tsc`; omitting
+  it causes `failed to open 'undefined'` at bundle time
 
 After scaffolding — or whenever the user shares an existing Gatling project —
 execute the validator with the Bash tool (do not read it, only the output
