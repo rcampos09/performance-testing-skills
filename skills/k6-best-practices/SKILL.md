@@ -12,7 +12,8 @@ compatibility: "Claude Code, Cursor, Windsurf. Requires k6 installed (brew insta
 model: sonnet
 metadata:
   author: rcampos
-  version: "1.1"
+  version: "1.2"
+  tags: [k6, load-testing, performance, javascript, typescript]
 ---
 
 # k6 Scenario Builder

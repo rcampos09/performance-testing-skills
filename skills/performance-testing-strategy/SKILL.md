@@ -14,7 +14,8 @@ compatibility: "Claude Code, Cursor, Windsurf"
 model: sonnet
 metadata:
   author: rcampos
-  version: "1.1"
+  version: "1.2"
+  tags: [performance-testing, load-testing, strategy, smoke-test, load-test, stress-test, sla]
 ---
 
 # Performance Testing Strategy Designer

@@ -4,7 +4,8 @@ description: "Guides developers and testers in writing, fixing, and structuring 
 compatibility: "Claude Code, Cursor, Windsurf. Supports all 5 Gatling languages: Java, Kotlin, Scala (JVM — requires Java 11+, Maven or Gradle) and JavaScript, TypeScript (requires Node.js 18+)."
 metadata:
   author: rcampos
-  version: "1.0"
+  version: "1.1"
+  tags: [gatling, load-testing, performance, java, kotlin, scala, javascript, typescript]
 ---
 
 # Gatling Scenario Builder
