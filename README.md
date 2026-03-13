@@ -22,6 +22,7 @@ Compatible with **Claude Code**, **Cursor**, and **Windsurf**.
 |---|---|---|
 | [`gatling-best-practices`](skills/gatling-best-practices/SKILL.md) | load testing, performance testing, Gatling, virtual users, ramp-up, JMeter migration, throughput, response time SLAs | Java · Kotlin · Scala · TypeScript · JavaScript |
 | [`performance-testing-strategy`](skills/performance-testing-strategy/SKILL.md) | performance test plan, test strategy, Smoke test, Load test, Stress test, Spike test, Endurance test, Soak test, SLA definition, how many users, where to start with performance testing | Tool-agnostic |
+| [`k6-best-practices`](skills/k6-best-practices/SKILL.md) | k6, Grafana k6, load testing JavaScript, virtual users, VUs, scenarios, executors, thresholds, checks, SharedArray, arrival rate, open model, closed model, ramp-up stages, WebSocket, gRPC | JavaScript · TypeScript |
 
 ## How it works
 

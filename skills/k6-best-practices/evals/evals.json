@@ -1,0 +1,161 @@
+{
+  "skill_name": "k6-best-practices",
+  "evals": [
+    {
+      "id": 1,
+      "name": "new-js-rest-api-load-test",
+      "prompt": "I need to write a k6 load test for our login API in JavaScript. The endpoint is POST /api/v1/auth/login with a JSON body of username and password. After login I need to call GET /api/v1/profile using the returned token. We expect 100 concurrent users at peak and our SLA is p95 under 800ms. I have a CSV file with test users.",
+      "expected_output": "A complete runnable JavaScript k6 script following the 5-block pattern (options with scenarios+thresholds, setup for auth, SharedArray for CSV users, default function with groups and sleep, teardown). Uses ramping-vus executor. Thresholds include p(95)<800. Run command with BASE_URL env var included.",
+      "assertions": [
+        {
+          "name": "uses_5_block_pattern",
+          "description": "Script has all 5 blocks: options (scenarios+thresholds), setup, SharedArray, default function with groups/checks/sleep, teardown or at minimum a complete runnable structure"
+        },
+        {
+          "name": "uses_ramping_vus_executor",
+          "description": "Executor is ramping-vus (not constant-vus) to ramp up to 100 VUs, not instant spike"
+        },
+        {
+          "name": "has_threshold_p95_800",
+          "description": "Thresholds include p(95)<800 matching the stated SLA"
+        },
+        {
+          "name": "token_extracted_from_setup",
+          "description": "Auth token is obtained in setup() and passed to default function via data parameter"
+        },
+        {
+          "name": "has_sleep_between_requests",
+          "description": "default function includes at least one sleep() call between requests"
+        },
+        {
+          "name": "uses_shared_array",
+          "description": "CSV user data is loaded via SharedArray, not via open() inside default function"
+        },
+        {
+          "name": "includes_run_command",
+          "description": "Response includes the k6 run command with --env BASE_URL parameter"
+        },
+        {
+          "name": "checks_do_not_replace_thresholds",
+          "description": "Script uses both check() for per-request diagnostics AND thresholds for test pass/fail — not check() alone"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "fix-checks-not-failing-test",
+      "prompt": "My k6 test always exits with exit code 0 even when all my API calls are returning 500 errors. I have this script:\n\nexport default function() {\n  const res = http.get('https://api.example.com/users');\n  check(res, { 'status is 200': (r) => r.status === 200 });\n}\n\nWhy doesn't it fail when the checks fail?",
+      "expected_output": "Explains that check() records statistics but never fails the test. To fail the test, thresholds must be defined in options. Delivers corrected script with both check() kept for diagnostics and thresholds added (http_req_failed rate<0.01 and checks rate>0.99). Explains the three mechanisms: check() vs threshold vs fail().",
+      "assertions": [
+        {
+          "name": "identifies_root_cause",
+          "description": "Explains that check() never stops or fails the test — it only records pass/fail statistics"
+        },
+        {
+          "name": "adds_thresholds",
+          "description": "Fixed script adds export const options with thresholds block including http_req_failed and/or checks rate threshold"
+        },
+        {
+          "name": "keeps_check_for_diagnostics",
+          "description": "check() is kept in the fixed script alongside thresholds — not removed"
+        },
+        {
+          "name": "explains_three_mechanisms",
+          "description": "Explains the difference between check(), threshold, and fail() and when to use each"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "wrong-executor-for-rps-target",
+      "prompt": "I need my k6 test to maintain exactly 200 requests per second for 10 minutes to validate our API's throughput capacity. I'm using ramping-vus but the RPS keeps varying depending on response time. What's the right way to do this?",
+      "expected_output": "Explains the open vs closed workload model difference. Delivers a script using constant-arrival-rate executor with rate:200, timeUnit:'1s', correct preAllocatedVUs calculation (rate × p95_seconds × 1.2), and maxVUs as safety ceiling. Explains dropped_iterations and how to detect them.",
+      "assertions": [
+        {
+          "name": "explains_open_vs_closed",
+          "description": "Explains why ramping-vus (closed model) varies throughput with response time, and why arrival-rate (open model) maintains fixed RPS"
+        },
+        {
+          "name": "uses_constant_arrival_rate",
+          "description": "Fixed script uses constant-arrival-rate executor, not ramping-vus"
+        },
+        {
+          "name": "sets_rate_200",
+          "description": "rate is set to 200 matching the stated requirement"
+        },
+        {
+          "name": "includes_preAllocatedVUs",
+          "description": "preAllocatedVUs is set with a reasonable value and explanation of how to calculate it"
+        },
+        {
+          "name": "includes_maxVUs",
+          "description": "maxVUs is set as a safety ceiling above preAllocatedVUs"
+        },
+        {
+          "name": "mentions_dropped_iterations",
+          "description": "Warns about dropped_iterations metric and how to detect/prevent it"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "memory-issue-large-data-file",
+      "prompt": "My k6 test crashes with out-of-memory errors when I try to run with 200 VUs. I'm loading a 50MB users.json file like this:\n\nexport default function() {\n  const users = JSON.parse(open('./data/users.json'));\n  const user = users[Math.floor(Math.random() * users.length)];\n  http.post(url, JSON.stringify(user));\n}",
+      "expected_output": "Identifies root cause: open() and JSON.parse() inside default function copies the 50MB file into memory for every VU on every iteration. Fix is to use SharedArray in init context — loaded once, shared across all VUs. Delivers corrected script with SharedArray. Explains deterministic vs random selection with idInTest.",
+      "assertions": [
+        {
+          "name": "identifies_root_cause",
+          "description": "Explains that open() and JSON.parse() inside default() copies data per VU per iteration, multiplying memory usage by VU count × iterations"
+        },
+        {
+          "name": "uses_shared_array",
+          "description": "Fixed script uses SharedArray initialized at init context (top level), not inside default function"
+        },
+        {
+          "name": "import_in_init_context",
+          "description": "import of SharedArray and open() call are at the top level of the file, not inside a function"
+        },
+        {
+          "name": "explains_memory_benefit",
+          "description": "Explains that SharedArray loads data once and shares the reference — not copied per VU"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "websocket-load-test",
+      "prompt": "I need to load test a WebSocket chat API. The flow is: connect to wss://chat.example.com/ws with a JWT token in the header, send a message every 5 seconds, validate that the server echoes back within 200ms, and disconnect after 30 seconds. We need to simulate 50 concurrent connections.",
+      "expected_output": "Complete k6 script using k6/ws. Uses constant-vus with 50 VUs. Connection includes Authorization header. setInterval for sending messages every 5s. check on message roundtrip time. setTimeout for graceful disconnect after 30s. Error handler registered. Checks validated.",
+      "assertions": [
+        {
+          "name": "imports_k6_ws",
+          "description": "Script imports from k6/ws correctly"
+        },
+        {
+          "name": "uses_constant_vus_50",
+          "description": "Options use constant-vus executor with 50 VUs"
+        },
+        {
+          "name": "auth_header_in_connection",
+          "description": "ws.connect() params include Authorization header with JWT token"
+        },
+        {
+          "name": "uses_set_interval_for_heartbeat",
+          "description": "socket.setInterval() is used to send messages every 5 seconds"
+        },
+        {
+          "name": "validates_roundtrip_in_message_handler",
+          "description": "socket.on('message') handler includes a check for response latency < 200ms"
+        },
+        {
+          "name": "has_error_handler",
+          "description": "socket.on('error') handler is registered"
+        },
+        {
+          "name": "uses_set_timeout_to_close",
+          "description": "socket.setTimeout() is used to close the connection after ~30 seconds"
+        }
+      ]
+    }
+  ]
+}
