@@ -42,6 +42,7 @@ Each skill delivers:
 | Maven | 3.8+ |
 | Gradle | 8.x (Gradle 9 not yet supported by Gatling plugin) |
 | Node.js (JS/TS) | 18+ |
+| k6 | latest (`brew install k6` / `apt install k6` / `choco install k6`) |
 
 ## Author
 
