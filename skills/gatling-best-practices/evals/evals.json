@@ -21,7 +21,7 @@
         },
         {
           "name": "uses_ramp_not_atOnce",
-          "description": "Injection profile uses rampUsers() not atOnceUsers() for 50 users"
+          "description": "Injection profile uses a ramp-based strategy (rampUsers(), rampConcurrentUsers(), or rampUsersPerSec()) — not atOnceUsers() — for 50 users"
         },
         {
           "name": "assertion_includes_p95_sla",
