@@ -118,8 +118,9 @@ export const products = new SharedArray('products', () =>
 );
 
 // Deterministic selection — each VU always picks the same user (avoids conflicts)
+// __VU is 1-based; subtract 1 so VU 1 maps to index 0
 export function pickUser(vuId) {
-  return users[(vuId - 1) % users.length];  // vuId is 1-based
+  return users[(vuId - 1) % users.length];
 }
 
 // Random selection — multiple VUs may pick the same record
@@ -219,13 +220,14 @@ k6 run \
 {
   "name": "k6-tests",
   "scripts": {
-    "build":      "esbuild src/**/*.ts --bundle --outdir=dist --platform=node --format=esm",
-    "test:smoke": "k6 run dist/smoke.js",
-    "test:load":  "k6 run dist/load.js"
+    "build:smoke": "esbuild src/smoke.ts --bundle --outfile=dist/smoke.js --target=es2015",
+    "build:load":  "esbuild src/load.ts --bundle --outfile=dist/load.js --target=es2015",
+    "test:smoke":  "npm run build:smoke && k6 run dist/smoke.js",
+    "test:load":   "npm run build:load  && k6 run dist/load.js"
   },
   "devDependencies": {
     "@types/k6":    "^0.54.0",
-    "esbuild":      "^0.20.0",
+    "esbuild":      "^0.24.0",
     "typescript":   "^5.0.0"
   }
 }
@@ -303,7 +305,9 @@ export default function(data: SetupData): void {
 
 Build and run:
 ```bash
-npm run build
+# k6 uses its own Goja runtime — NOT Node.js. Never use --platform=node with esbuild.
+# Compile each entrypoint separately (k6 does not support ES module bundles with multiple entries).
+npx esbuild src/load.ts --bundle --outfile=dist/load.js --target=es2015
 k6 run --env BASE_URL=https://staging.example.com dist/load.js
 ```
 
@@ -353,6 +357,26 @@ import { statusChecks } from '../lib/checks.js';
 
 check(res, statusChecks('GET /api/products'));
 ```
+
+---
+
+## Parallel Requests — `http.batch()`
+
+Use `http.batch()` to fire multiple requests concurrently within the same VU iteration — simulates a browser loading page resources in parallel.
+
+```javascript
+const responses = http.batch([
+  ['GET', `${BASE_URL}/api/products`,   null, { tags: { endpoint: 'products' } }],
+  ['GET', `${BASE_URL}/api/categories`, null, { tags: { endpoint: 'categories' } }],
+  ['GET', `${BASE_URL}/api/banners`,    null, { tags: { endpoint: 'banners' } }],
+]);
+
+check(responses[0], { 'products 200':   (r) => r.status === 200 });
+check(responses[1], { 'categories 200': (r) => r.status === 200 });
+check(responses[2], { 'banners 200':    (r) => r.status === 200 });
+```
+
+`http.batch()` accepts an array of `[method, url, body, params]` tuples. All requests start in parallel; the call returns when all responses arrive.
 
 ---
 
