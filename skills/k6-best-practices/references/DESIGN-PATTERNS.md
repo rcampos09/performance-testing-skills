@@ -214,6 +214,8 @@ k6 run \
 
 ## TypeScript Setup
 
+**Important:** Run `npm install` before opening the project in an IDE or running `tsc`. Errors like `Cannot find module 'k6'` or `Cannot find type definition file for 'k6'` appear until `@types/k6` is installed — they are not a script error.
+
 ### package.json
 
 ```json

@@ -43,7 +43,7 @@ Ask only what is unknown:
 
 **Only load [references/PROTOCOLS.md](references/PROTOCOLS.md) when the user mentions WebSocket or gRPC.** Contains connection setup, event handling, streaming DSL, and gotchas.
 
-**Only load [references/DESIGN-PATTERNS.md](references/DESIGN-PATTERNS.md) when the user asks about folder structure, project architecture, sharing data between VUs, TypeScript setup, or scaling beyond a single file.**
+**Only load [references/DESIGN-PATTERNS.md](references/DESIGN-PATTERNS.md) when the user asks about folder structure, project architecture, sharing data between VUs, TypeScript setup, scaling beyond a single file, modular structure, reusable helpers, multi-step user flows (e-commerce, checkout, login+browse), or multiple scenarios sharing common logic.**
 
 ---
 
@@ -135,19 +135,33 @@ import { SharedArray } from 'k6/data';
 const users = new SharedArray('users', () => JSON.parse(open('./data/users.json')));
 ```
 
-Note: `open()` is an init-context-only function. Calling it inside `default()` throws a runtime error immediately — it does not cause OOM.
+**Two distinct errors to avoid with `open()`:**
+- Plain variable at init context → OOM (per-VU copy). Fix: use `SharedArray`.
+- `open()` inside `default()` → runtime error immediately (`can't call open() in the VU context`). This is NOT OOM — it crashes on first call.
 
-### 5. Imports inside functions — runtime error
+### 5. Imports not at the top of the file — breaks convention and readability
+
+All `import` statements must be the **very first lines** of the file — before `export const options`, before `SharedArray`, before any other code. ES modules technically hoist imports regardless of position, but placing them anywhere else creates scripts that are hard to read and breaks the init-context mental model.
 
 ```javascript
-// Wrong — "import declarations may only appear at top level"
-export default function() {
-  import http from 'k6/http';  // ❌ runtime error
-}
+// Wrong — imports scattered between blocks
+export const options = { ... };         // ❌ options before imports
 
-// Correct
-import http from 'k6/http';
+import { SharedArray } from 'k6/data'; // ❌ import mid-file
+const users = new SharedArray(...);
+
+import http from 'k6/http';            // ❌ another import even later
 import { check, sleep } from 'k6';
+
+// Correct — all imports first, then options, then data, then functions
+import http                        from 'k6/http';
+import { check, group, sleep, fail } from 'k6';
+import { SharedArray }             from 'k6/data';
+
+export const options = { ... };
+
+const users = new SharedArray('users', () => JSON.parse(open('./data/users.json')));
+
 export default function() { ... }
 ```
 
