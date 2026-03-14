@@ -64,7 +64,23 @@ metadata:                 # optional
 
 ## Testing a Skill
 
-After any change to a skill, validate it by installing and running prompts in a separate test directory:
+There are three levels of testing, from fastest to most thorough.
+
+### Level 1 — Structural validation (automatic, every push)
+
+The CI workflow (`.github/workflows/validate-skills.yml`) runs `scripts/validate_skills.py` on every push to `main`. It validates frontmatter, name constraints, line count, and evals.json structure. Free, no API key required.
+
+Run locally before committing:
+
+```bash
+python3 -m venv /tmp/skills-venv
+/tmp/skills-venv/bin/pip install PyYAML -q
+/tmp/skills-venv/bin/python scripts/validate_skills.py
+```
+
+### Level 2 — Manual smoke test (quick check)
+
+After any change to a skill, install and run a prompt in a clean directory:
 
 ```bash
 # 1. Create a clean test directory
@@ -74,16 +90,54 @@ mkdir ~/gatling-test && cd ~/gatling-test
 npx skills add rcampos09/performance-testing-skills --yes
 
 # 3. Open Claude Code and run a test prompt
-# 4. Analyze the log — look for extra iterations, errors, or wrong output
+# 4. Analyze the output — look for missing patterns, wrong syntax, or incomplete scripts
 # 5. Fix issues in the skill files, commit, push
-# 6. Re-install (npx skills add ... --yes) and repeat
 ```
 
-**What to look for in logs:**
-- Extra iterations = missing information in SKILL.md (add it)
-- Wrong package names / imports = update code examples in SKILL.md or references/
-- Script errors = fix scripts/ and re-test
-- Validator false positives = fix validate.sh checks
+### Level 3 — Benchmark with skill-creator (before releases)
+
+Use [skill-creator](https://github.com/anthropics/skills/tree/main/skills/skill-creator) to run the `evals/evals.json` test cases and measure quality quantitatively. Runs each eval **with** and **without** the skill, then grades the output against assertions using Claude as a judge.
+
+**One-time setup:**
+
+```bash
+mkdir ~/skill-creator-workspace
+cd ~/skill-creator-workspace
+npx skills add anthropics/skills --skill skill-creator --yes
+```
+
+**Running a benchmark** (open Claude Code in `~/skill-creator-workspace`):
+
+```
+Test my skill k6-best-practices located at
+/path/to/skills/k6-best-practices/
+Use the evals in evals/evals.json.
+Create a workspace at ~/skill-creator-workspace/k6-iteration-1
+```
+
+**What the benchmark produces:**
+
+| Metric | Meaning |
+|---|---|
+| Pass rate with skill | % of assertions that pass when skill is active |
+| Pass rate without skill | Baseline — what the model does alone |
+| Delta | The value the skill adds (+pp = percentage points) |
+| Tokens | Cost per response (with skill costs more — expected) |
+
+**How to interpret results:**
+- Delta > 0 → skill adds value; the higher the better
+- Same result with and without skill → assertion may be too easy, or skill doesn't help here
+- Assertion fails in both → gap in SKILL.md — add explicit instruction
+- Assertion passes without skill but fails with → skill is confusing the model — simplify that section
+
+**After reviewing results**, fix the specific assertion gap in SKILL.md, bump the `version` in frontmatter, commit, and re-run to confirm the fix.
+
+**Baseline benchmarks (reference):**
+
+| Skill | With skill | Without skill | Delta |
+|---|---|---|---|
+| `k6-best-practices` v1.3 | 95% | 79% | +16pp |
+| `gatling-best-practices` v1.1 | 95.8% | 59.8% | +36pp |
 
 ## Installing Skills
 
