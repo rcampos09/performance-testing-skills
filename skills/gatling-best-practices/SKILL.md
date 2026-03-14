@@ -1,6 +1,7 @@
 ---
 name: gatling-best-practices
 description: "Guides developers and testers in writing, fixing, and structuring Gatling load test scenarios. Use this skill whenever the user mentions load testing, performance testing, stress testing, Gatling, virtual users, VUs, ramp-up, injection profiles, simulations, JMeter migration, k6 migration, throughput, response time SLAs, or wants to benchmark an API or service — even if they don't explicitly say 'Gatling' or 'performance test'."
+license: MIT
 compatibility: "Claude Code, Cursor, Windsurf. Supports all 5 Gatling languages: Java, Kotlin, Scala (JVM — requires Java 11+, Maven or Gradle) and JavaScript, TypeScript (requires Node.js 18+)."
 metadata:
   author: rcampos

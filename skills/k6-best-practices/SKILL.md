@@ -139,7 +139,6 @@ const users = new SharedArray('users', () => JSON.parse(open('./data/users.json'
 **Two distinct errors to avoid with `open()` — always explain both when either appears:**
 - Plain variable at init context → OOM (per-VU copy). Fix: use `SharedArray`.
 - `open()` inside `default()` → runtime error immediately (`can't call open() in the VU context`). This is NOT OOM — it crashes on first call.
-
 > **Instruction:** Whenever you fix an OOM or `open()` misuse, always clarify both errors in your response — even if the user only asked about one. This prevents the user from hitting the other variant right after fixing the first.
 
 ### 5. Imports not at the top of the file — breaks convention and readability
