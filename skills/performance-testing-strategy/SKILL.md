@@ -14,7 +14,7 @@ compatibility: "Claude Code, Cursor, Windsurf"
 model: sonnet
 metadata:
   author: rcampos
-  version: "1.2"
+  version: "1.3"
   tags: [performance-testing, load-testing, strategy, smoke-test, load-test, stress-test, sla]
 ---
 
@@ -85,6 +85,7 @@ Recommend only the test types that match the stated goals and risks. **Do not re
 |---|---|
 | First time testing, no baseline | Smoke → Load |
 | Pre-release regression check | Smoke → Load |
+| Low-risk internal tool (≤ 50 users, no external SLA) | Smoke → Load only — stop here, do not add Stress or Spike |
 | Preparing for a peak event (Black Friday, launch) | Smoke → Load → Spike |
 | Investigating slowdown under sustained traffic | Smoke → Load → Endurance |
 | Finding the system's breaking point | Smoke → Load → Stress |
@@ -170,6 +171,8 @@ When to skip:  Short-term regression only — note the risk and schedule a soak 
 - Network I/O (saturation indicates infrastructure bottleneck, not application bottleneck)
 - Database: connection pool usage, slow query rate, lock waits
 - Runtime-specific (if applicable): heap usage, garbage collection frequency and pause duration
+
+> **Instruction:** Express all metrics in generic terms — never include runtime-specific flags, API calls, or platform-specific names. Use "heap usage" and "GC pause duration", not `-XX:+HeapDumpOnOutOfMemoryError`, `process.on()`, `HeapInuse`, or any language/runtime syntax. The strategy must remain tool-agnostic throughout Steps 4 and 5.
 
 ---
 

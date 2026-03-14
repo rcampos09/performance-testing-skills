@@ -141,7 +141,7 @@
         },
         {
           "name": "load_at_launch_and_year1",
-          "description": "Load test addresses both 500 users (launch) and 2000 users (year 1 growth)"
+          "description": "Strategy addresses both the 500-user launch target and the 2000-user Year 1 growth horizon — in any test type (Load for launch, Stress for growth is acceptable)"
         },
         {
           "name": "stress_for_capacity_planning",
