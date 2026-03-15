@@ -58,7 +58,25 @@ Improved `open()` error distinction, import ordering, TS setup, and modular trig
 
 ## performance-testing-strategy
 
-### [1.3] — 2026-03-14
+### [1.3] — 2026-03-14 (iteration 2 — fixes confirmed)
+
+**Benchmark (iteration 2):**
+
+| Config | Pass Rate | Time | Tokens |
+|---|---|---|---|
+| with_skill | **100% (5/5 perfect)** | 179.8s | 26,948 |
+| without_skill | 73.4% | 176.3s | 20,301 |
+| Delta | **+26.6pp** | +3.5s | +6,647 (+33%) |
+
+**Fixes confirmed:**
+- `resource-leak-investigation`: `no_tool_specific_syntax` now passes — JVM flags, Node.js APIs, and Go metric names no longer appear in prerequisites
+- `no-sla-defined`: `recommends_smoke_then_load` now passes — skill correctly stops at Smoke → Load for low-risk internal systems
+
+**Improvement vs. iteration 1:** 89.8% → 100% (+10.2pp). Delta grew from +19pp to +26.6pp.
+
+---
+
+### [1.3] — 2026-03-14 (iteration 1)
 
 **Benchmark (iteration 1):**
 
@@ -92,8 +110,10 @@ Added test type tags to metadata.
 
 ## Benchmark Baseline (as of 2026-03-14)
 
-| Skill | Version | With skill | Without skill | Delta |
-|---|---|---|---|---|
-| `k6-best-practices` | v1.3 | 95% ± 11% | 78.8% ± 5% | +16pp |
-| `gatling-best-practices` | v1.1 | 95.8% ± 8% | 59.8% ± 31% | +36pp |
-| `performance-testing-strategy` | v1.3 | 89.8% ± 9.5% | 70.6% ± 8.7% | +19pp |
+_Updated after iteration 2 of performance-testing-strategy._
+
+| Skill | Version | Iteration | With skill | Without skill | Delta |
+|---|---|---|---|---|---|
+| `k6-best-practices` | v1.3 | 1 | 95% ± 11% | 78.8% ± 5% | +16pp |
+| `gatling-best-practices` | v1.1 | 1 | 95.8% ± 8% | 59.8% ± 31% | +36pp |
+| `performance-testing-strategy` | v1.3 | 2 | **100%** | 73.4% | **+26.6pp** |
