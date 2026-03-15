@@ -29,11 +29,9 @@ When producing or fixing a script, always deliver three things:
 2. **The exact run command** with the environment variables needed.
 3. **A one-line explanation** of the executor chosen and why it fits the load goal.
 
-**When fixing any OOM error or `open()` misuse, also cover both distinct failure modes in your response — even if the user only mentioned one:**
-- Plain variable at init context (e.g. `const users = JSON.parse(open(...))`) → **OOM**: data is copied once per VU, so memory scales with VU count. Fix: `SharedArray`.
-- `open()` inside `default()` → **immediate runtime error** (`can't call open() in the VU context`) — this is NOT OOM, it crashes on the very first call. Fix: move `open()` to init context.
-
-Explaining both prevents the user from hitting the second error immediately after fixing the first.
+**When fixing any OOM error or `open()` misuse, cover both failure modes — even if the user only mentioned one:**
+- Plain variable at init context → **OOM** (data copied per VU). Fix: `SharedArray`.
+- `open()` inside `default()` → **immediate runtime error** (`can't call open() in the VU context`). Fix: move to init context.
 
 ---
 
@@ -142,10 +140,9 @@ import { SharedArray } from 'k6/data';
 const users = new SharedArray('users', () => JSON.parse(open('./data/users.json')));
 ```
 
-**Two distinct errors to avoid with `open()` — always explain both when either appears:**
-- Plain variable at init context → OOM (per-VU copy). Fix: use `SharedArray`.
-- `open()` inside `default()` → runtime error immediately (`can't call open() in the VU context`). This is NOT OOM — it crashes on first call.
-> **Instruction:** Whenever you fix an OOM or `open()` misuse, always clarify both errors in your response — even if the user only asked about one. This prevents the user from hitting the other variant right after fixing the first.
+**Two `open()` errors to always explain together:**
+- Plain variable at init context → OOM (per-VU copy). Fix: `SharedArray`.
+- `open()` inside `default()` → runtime error (`can't call open() in the VU context`). Fix: move to init context.
 
 ### 5. Imports not at the top of the file — breaks convention and readability
 
@@ -494,13 +491,6 @@ k6 run dist/load.js
 k6 cloud run script.js
 ```
 
----
-
 ## References
-
-- [Executors & Scenarios — Detailed Parameters](references/EXECUTORS.md)
-- [Protocols — WebSocket & gRPC](references/PROTOCOLS.md)
-- [Modular Design Patterns & TypeScript](references/DESIGN-PATTERNS.md)
-- [k6 JavaScript API](https://grafana.com/docs/k6/latest/javascript-api/)
-- [Thresholds](https://grafana.com/docs/k6/latest/using-k6/thresholds/)
-- [Metrics Reference](https://grafana.com/docs/k6/latest/using-k6/metrics/reference/)
+- [Executors & Scenarios](references/EXECUTORS.md) · [Protocols — WebSocket & gRPC](references/PROTOCOLS.md) · [Design Patterns & TypeScript](references/DESIGN-PATTERNS.md)
+- [k6 JavaScript API](https://grafana.com/docs/k6/latest/javascript-api/) · [Thresholds](https://grafana.com/docs/k6/latest/using-k6/thresholds/) · [Metrics Reference](https://grafana.com/docs/k6/latest/using-k6/metrics/reference/)

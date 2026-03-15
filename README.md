@@ -23,6 +23,7 @@ Compatible with **Claude Code**, **Cursor**, and **Windsurf**.
 | [`gatling-best-practices`](skills/gatling-best-practices/SKILL.md) | load testing, performance testing, Gatling, virtual users, ramp-up, JMeter migration, throughput, response time SLAs | Java · Kotlin · Scala · TypeScript · JavaScript |
 | [`performance-testing-strategy`](skills/performance-testing-strategy/SKILL.md) | performance test plan, test strategy, Smoke test, Load test, Stress test, Spike test, Endurance test, Soak test, SLA definition, how many users, where to start with performance testing | Tool-agnostic |
 | [`k6-best-practices`](skills/k6-best-practices/SKILL.md) | k6, Grafana k6, load testing JavaScript, virtual users, VUs, scenarios, executors, thresholds, checks, SharedArray, arrival rate, open model, closed model, ramp-up stages, WebSocket, gRPC | JavaScript · TypeScript |
+| [`locust-best-practices`](skills/locust-best-practices/SKILL.md) | Locust, locustfile, HttpUser, TaskSet, load testing Python, virtual users, spawn rate, wait_time, catch_response, LoadTestShape, ramp-up stages, spike test | Python |
 
 ## How it works
 
@@ -43,6 +44,7 @@ Each skill delivers:
 | Gradle | 8.x (Gradle 9 not yet supported by Gatling plugin) |
 | Node.js (JS/TS) | 18+ |
 | k6 | latest (`brew install k6` / `apt install k6` / `choco install k6`) |
+| Python (Locust) | 3.8+ (`pip install locust`) |
 
 ## Author
 

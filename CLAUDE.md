@@ -151,6 +151,7 @@ npx skills add rcampos09/performance-testing-skills
 npx skills add rcampos09/performance-testing-skills --skill gatling-best-practices
 npx skills add rcampos09/performance-testing-skills --skill performance-testing-strategy
 npx skills add rcampos09/performance-testing-skills --skill k6-best-practices
+npx skills add rcampos09/performance-testing-skills --skill locust-best-practices
 
 # Opt out of anonymous telemetry
 DISABLE_TELEMETRY=1 npx skills add rcampos09/performance-testing-skills
@@ -165,6 +166,7 @@ The CLI discovers skills automatically from the `skills/<name>/SKILL.md` path co
 | `gatling-best-practices` | `skills/gatling-best-practices/SKILL.md` | Guides building production-ready Gatling load test scenarios (Java, Kotlin, Scala, JS, TS) |
 | `performance-testing-strategy` | `skills/performance-testing-strategy/SKILL.md` | Guides QA engineers in designing a complete performance testing strategy (Smoke, Load, Stress, Spike, Endurance) |
 | `k6-best-practices` | `skills/k6-best-practices/SKILL.md` | Guides developers and testers in writing production-ready k6 load test scripts (JavaScript, TypeScript) |
+| `locust-best-practices` | `skills/locust-best-practices/SKILL.md` | Guides developers and testers in writing production-ready Locust load test scripts (Python) |
 
 ## References
 

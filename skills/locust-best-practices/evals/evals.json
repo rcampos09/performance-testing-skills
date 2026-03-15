@@ -1,0 +1,141 @@
+{
+  "skill_name": "locust-best-practices",
+  "evals": [
+    {
+      "id": 1,
+      "name": "new-rest-api-load-test",
+      "prompt": "I need to write a Locust load test for our e-commerce API in Python. The flow is: POST /api/auth/login to get a JWT token, then GET /api/products (browsed 3× more than checkout), then POST /api/orders for checkout. We expect 100 concurrent users, ramp up over 20 seconds, run for 10 minutes. SLA is p95 under 1000ms. I have a CSV file with test users.",
+      "expected_output": "A complete locustfile with: HttpUser class, on_start doing login and storing token as self.token, _auth_headers() helper, @task(3) for products and @task(1) for checkout, catch_response=True on all requests with response.failure() calls, between(1,3) wait_time, name= grouping on dynamic URLs, env vars for host/credentials, and the exact locust CLI command with --headless -u 100 -r 5 -t 10m --host.",
+      "assertions": [
+        {
+          "name": "uses_4_block_pattern",
+          "description": "Locustfile has imports/config block, HttpUser class with on_start and tasks, optional events block, and run command comment"
+        },
+        {
+          "name": "per_user_auth_in_on_start",
+          "description": "Each virtual user authenticates in on_start() storing token as self.token — not a shared global token"
+        },
+        {
+          "name": "uses_catch_response",
+          "description": "All task requests use catch_response=True with explicit response.failure() calls for non-200 responses"
+        },
+        {
+          "name": "task_weights_reflect_distribution",
+          "description": "Products task has higher weight (3) than checkout task (1) matching the 3× browsing ratio"
+        },
+        {
+          "name": "has_meaningful_wait_time",
+          "description": "wait_time uses between() or constant_throughput() — not constant(0) or missing"
+        },
+        {
+          "name": "uses_env_vars_for_credentials",
+          "description": "Host, username, and password come from os.environ — not hardcoded strings"
+        },
+        {
+          "name": "includes_run_command",
+          "description": "Response includes the locust CLI command with --headless -u 100 -r 5 -t 10m --host flags"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "fix-silent-failures",
+      "prompt": "My Locust test always shows 0% error rate even when the API returns 500 errors and wrong data. Here's my task:\n\n@task\ndef get_users(self):\n    self.client.get('/api/users')\n\nWhy doesn't it report failures?",
+      "expected_output": "Explains that Locust marks a request as failed only when there is a connection error or timeout — HTTP 4xx/5xx responses still count as 'successful' requests in stats unless catch_response=True is used with response.failure(). Delivers fixed task using catch_response=True context manager with status check and body validation.",
+      "assertions": [
+        {
+          "name": "identifies_root_cause",
+          "description": "Explains that without catch_response=True, Locust counts any completed HTTP response (including 4xx/5xx) as a success in stats"
+        },
+        {
+          "name": "adds_catch_response",
+          "description": "Fixed task uses 'with self.client.get(..., catch_response=True) as response:' pattern"
+        },
+        {
+          "name": "adds_response_failure_call",
+          "description": "Fixed task calls response.failure() with a descriptive message when status is unexpected"
+        },
+        {
+          "name": "adds_body_validation",
+          "description": "Fixed task also validates response body content — not just status code"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "spike-test-load-shape",
+      "prompt": "We're running a flash sale next week. Normal traffic is 20 concurrent users but we expect a sudden burst to 500 users within 30 seconds when the sale starts. After 5 minutes at peak we expect it to drop back to 20. How do I model this in Locust?",
+      "expected_output": "Complete locustfile with LoadTestShape subclass implementing the spike pattern: baseline 20 users → spike to 500 with high spawn_rate (50+) → hold 5 minutes → ramp down to 20 → end. Explains that -u and -r flags must NOT be passed when using LoadTestShape. Includes run command without -u/-r.",
+      "assertions": [
+        {
+          "name": "uses_load_test_shape",
+          "description": "Solution uses a LoadTestShape subclass with a tick() method — not just -u and -r flags"
+        },
+        {
+          "name": "spike_to_500_users",
+          "description": "Shape reaches 500 users during the peak stage"
+        },
+        {
+          "name": "high_spawn_rate_for_spike",
+          "description": "Spawn rate during the spike stage is high (≥ 50 users/sec) to simulate a sudden burst"
+        },
+        {
+          "name": "holds_peak_for_5_minutes",
+          "description": "Shape maintains 500 users for approximately 5 minutes (300 seconds)"
+        },
+        {
+          "name": "run_command_omits_u_and_r",
+          "description": "The locust run command does NOT include -u or -r flags since LoadTestShape controls user count"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "fix-exploding-stats-table",
+      "prompt": "My Locust report has thousands of rows like /product/1, /product/2, /product/3... and I can't read anything. How do I fix this?",
+      "expected_output": "Identifies root cause: dynamic URL paths create a separate stats row per unique URL. Fix is to add name='/product/[id]' parameter to group them under one stats entry. Shows before/after code example. Mentions this applies to any parameterized URL.",
+      "assertions": [
+        {
+          "name": "identifies_root_cause",
+          "description": "Explains that each unique URL path creates a separate row in Locust's stats table"
+        },
+        {
+          "name": "uses_name_parameter",
+          "description": "Fix adds name='/product/[id]' (or similar grouping pattern) to the client call"
+        },
+        {
+          "name": "shows_before_after",
+          "description": "Response includes both the wrong code (without name=) and the corrected code (with name=)"
+        },
+        {
+          "name": "generalizes_the_pattern",
+          "description": "Explains this applies to any parameterized URL — not just /product/[id]"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "csv-data-parameterization",
+      "prompt": "I need each virtual user in my Locust test to log in with different credentials from a CSV file called users.csv with columns username,password. I have 500 users in the file and expect to run 100 VUs. How do I load and distribute the CSV data without all users sharing the same row?",
+      "expected_output": "Complete solution loading CSV once at module level (not inside the class or on_start) using csv module or pandas. Uses an iterator or index based on user_id or a queue to distribute rows across VUs. Stores per-user credentials as self.username/self.password in on_start. Handles the case where VU count exceeds CSV rows (cycling).",
+      "assertions": [
+        {
+          "name": "loads_csv_at_module_level",
+          "description": "CSV is loaded once at module level (outside the class) — not reloaded in on_start or in each task"
+        },
+        {
+          "name": "distributes_rows_across_vus",
+          "description": "Each VU gets a different row using user_id index, modulo cycling, or a queue — not all VUs using row 0"
+        },
+        {
+          "name": "stores_credentials_as_instance_attrs",
+          "description": "Credentials are stored as self.username and self.password in on_start — not as globals"
+        },
+        {
+          "name": "handles_vu_count_exceeds_csv",
+          "description": "Solution handles the case where number of VUs exceeds CSV rows (e.g., using modulo: users[self.user_id % len(users)])"
+        }
+      ]
+    }
+  ]
+}
