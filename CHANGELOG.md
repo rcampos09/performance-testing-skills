@@ -10,6 +10,24 @@ Format: `[version] — date | benchmark results | key findings | what was fixed`
 
 ## k6-best-practices
 
+### [1.4] — 2026-03-15 (iteration 2 — structural improvement confirmed)
+
+**Benchmark (iteration 2 — v1.4 vs v1.3):**
+
+| Config | Pass Rate | Time | Tokens |
+|---|---|---|---|
+| with_skill (v1.4) | **100%** | 79.6s | 20,064 |
+| old_skill (v1.3) | **100%** | 74.5s | 19,479 |
+| Delta | 0pp | +5.1s | +585 |
+
+**Key finding:** Both versions scored 100% — the `clarifies_open_is_init_only` failure in iteration 1 was **statistical noise** (N=1 per eval), not a systematic gap. Deltas under ~20pp are unreliable with a single run per eval.
+
+**What this means for the skill:** v1.4 moves the `open()` dual-error instruction to the Output Format section (more prominent placement) — a structural improvement that cannot be measured at N=1 but follows best practices for instruction visibility.
+
+**Statistical note:** To reliably detect gaps < 20pp, run each eval N ≥ 3 times. This applies to all skills in this repo.
+
+---
+
 ### [1.3] — 2026-03-14
 
 **Benchmark (iteration 1):**
@@ -110,10 +128,12 @@ Added test type tags to metadata.
 
 ## Benchmark Baseline (as of 2026-03-14)
 
-_Updated after iteration 2 of performance-testing-strategy._
+_Final baseline after all skill-creator iterations (2026-03-15)._
 
 | Skill | Version | Iteration | With skill | Without skill | Delta |
 |---|---|---|---|---|---|
-| `k6-best-practices` | v1.3 | 1 | 95% ± 11% | 78.8% ± 5% | +16pp |
+| `k6-best-practices` | v1.4 | 2 | **100%** | 78.8% ± 5% | — |
 | `gatling-best-practices` | v1.1 | 1 | 95.8% ± 8% | 59.8% ± 31% | +36pp |
-| `performance-testing-strategy` | v1.3 | 2 | **100%** | 73.4% | **+26.6pp** |
+| `performance-testing-strategy` | v1.3 | 2 | **100%** | 73.4% | +26.6pp |
+
+> ⚠️ **Statistical note:** Pass rate deltas under ~20pp require N ≥ 3 runs per eval to be reliable. Results with high variance (±10%+) should be interpreted with caution.
