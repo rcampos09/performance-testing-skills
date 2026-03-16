@@ -11,7 +11,7 @@ compatibility: "Claude Code, Cursor, Windsurf. Requires Python 3.8+ and locust i
 model: sonnet
 metadata:
   author: rcampos
-  version: "1.1"
+  version: "1.2"
   tags: [locust, load-testing, performance, python]
 ---
 

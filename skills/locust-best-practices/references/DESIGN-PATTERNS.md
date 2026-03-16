@@ -76,33 +76,54 @@ class ShopUser(HttpUser):
 
 ## Pattern 2 — CSV data loader (module-level, not per-VU)
 
-Load test data once at import time and distribute across VUs using modulo indexing:
+Load test data once at import time. Distribute across VUs using a thread-safe cycling
+iterator so each VU gets a unique row, and rows wrap around if VU count exceeds CSV rows.
 
 ```python
-# common/data_loader.py
 import csv
+import itertools
+import threading
+from locust import HttpUser, task, between
 
+# ── Load once at module level ──────────────────────────────────────────────
 def load_csv(path):
     with open(path, newline="", encoding="utf-8") as f:
         return list(csv.DictReader(f))
 
+USERS = load_csv("data/users.csv")         # loaded once, shared read-only
+_user_iter = itertools.cycle(USERS)        # wraps around automatically
+_lock = threading.Lock()                   # greenlet-safe
 
-# users/shop_user.py
-from locust import HttpUser, task, between
-from common.data_loader import load_csv
+def _next_user():
+    with _lock:
+        return next(_user_iter)
 
-# Loaded once at module import — shared across all VUs
-USERS = load_csv("data/users.csv")
-
+# ── User class ─────────────────────────────────────────────────────────────
 class ShopUser(HttpUser):
     wait_time = between(1, 3)
 
     def on_start(self):
-        # Each VU gets a different row using modulo cycling
-        user = USERS[self.environment.runner.user_count % len(USERS)]
+        user = _next_user()
+        # Store ALL credential fields as instance attributes — not just the ones
+        # you use immediately. Future tasks (token refresh, re-login) need them.
         self.username = user["username"]
-        self.password = user["password"]
+        self.password = user["password"]    # ← keep this even if only used once
+        # Now log in with per-VU credentials
+        with self.client.post(
+            "/auth/login",
+            json={"username": self.username, "password": self.password},
+            catch_response=True,
+        ) as response:
+            if response.status_code == 200:
+                self.token = response.json()["access_token"]
+            else:
+                response.failure(f"Login failed: {response.status_code}")
+                self.token = None
 ```
+
+**Why store `self.password` even after login?**
+Token expiry handlers, retry logic, and re-authentication tasks all need `self.password`.
+If you drop it to a local variable, those later uses will crash with `AttributeError`.
 
 ---
 

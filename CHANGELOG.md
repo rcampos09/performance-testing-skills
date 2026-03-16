@@ -33,6 +33,20 @@ Format: `[version] — date | benchmark results | key findings | what was fixed`
 | Eval 5 regression — only `self.username` stored | Added explicit instruction: store **all** CSV fields as instance attributes (`self.username` AND `self.password`) |
 | Eval 1 assertion too strict | Reworded to accept LoadTestShape responses without `-u`/`-r` |
 
+### [1.2] — 2026-03-15 (iteration 2 — fixes confirmed)
+
+**Benchmark (iteration 2 — v1.2 vs v1.1):**
+
+| Config | Pass Rate | Time | Tokens |
+|---|---|---|---|
+| with_skill (v1.2) | **100% (8/8)** | — | +1,088 vs v1.1 |
+| old_skill (v1.1) | **100% (8/8)** | — | — |
+| Delta | 0pp (ceiling) | +2.6s | +6% |
+
+**Fix confirmed:** Eval 5 (CSV parameterization) — `self.password` now stored correctly (was 75% in iter 1, now 100%). DESIGN-PATTERNS.md updated with thread-safe `itertools.cycle` + `threading.Lock` pattern.
+
+**Improvement vs. iteration 1:** 95.1% → 100% (+4.9pp). Both configs at ceiling — baseline already knows Locust well. Skill value concentrated in advanced cases (WebSocket, CSV distribution).
+
 ### [1.0] — 2026-03-15 (initial release)
 
 ---
@@ -164,5 +178,6 @@ _Final baseline after all skill-creator iterations (2026-03-15)._
 | `k6-best-practices` | v1.4 | 2 | **100%** | 78.8% ± 5% | — |
 | `gatling-best-practices` | v1.1 | 1 | 95.8% ± 8% | 59.8% ± 31% | +36pp |
 | `performance-testing-strategy` | v1.3 | 2 | **100%** | 73.4% | +26.6pp |
+| `locust-best-practices` | v1.2 | 2 | **100%** | 91.4% | +8.6pp |
 
 > ⚠️ **Statistical note:** Pass rate deltas under ~20pp require N ≥ 3 runs per eval to be reliable. Results with high variance (±10%+) should be interpreted with caution.
