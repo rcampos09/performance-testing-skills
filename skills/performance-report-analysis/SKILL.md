@@ -16,7 +16,7 @@ compatibility: "Claude Code, Cursor, Windsurf. Tool-agnostic: works with output 
 model: sonnet
 metadata:
   author: rcampos
-  version: "1.1"
+  version: "1.2"
   tags: [performance-testing, load-testing, reporting, bottleneck-analysis, stakeholder-communication]
 ---
 
@@ -43,19 +43,36 @@ After completing Steps 1–3, deliver two artifacts:
 
 ## Step 1 — Gather the Results
 
-Ask only what you don't have yet. You need at minimum:
+Do not jump straight to analysis. First ask the questions below, grouped logically.
+Wait for answers before proceeding. The goal is to understand the results *from the
+perspective of someone who already ran the test* — not to plan a new one.
 
-- **Test type run:** Smoke / Load / Stress / Spike / Endurance
-- **Tool used:** (to interpret format correctly — k6, Gatling, Locust, JMeter, Artillery, other)
-- **Raw numbers:** response time percentiles (p50, p90, p95, p99), throughput (RPS),
-  error rate (%), concurrent users at peak
-- **SLA targets:** what the system was supposed to meet (p95 < Xms, error rate < Y%)
-- **Baseline:** previous test results or expected values to compare against (if any)
-- **Infrastructure observations:** any CPU, memory, DB, or network metrics collected
-  during the test
+### Group A — Always ask (every analysis session)
 
-If the user pastes raw output, extract the numbers yourself. If critical fields are
-missing, ask specifically for them — do not proceed with incomplete data.
+Ask these first, even if the user has already pasted raw output:
+
+1. **Tool and test type:** Which tool generated this report? (k6, Gatling, Locust, JMeter, Artillery, other) — and what type of test was it? (Load, Stress, Spike, Endurance, Smoke)
+2. **Did the test complete?** Did it run the full configured duration and reach the target user count / RPS? If not, the results may be partial or unreliable.
+3. **Who will read the report?** Engineers and QA only? A manager or team lead? Business stakeholders or executives? — This determines whether to produce a technical report, a business report, or both.
+
+### Group B — Ask only if missing from the pasted output
+
+Ask only what is not already present in the data the user shared:
+
+- **Percentiles:** Do you have p95 and p99, or only the average/mean?
+- **SLA targets:** What were the pass/fail thresholds? (e.g., p95 < 800ms, error rate < 1%) — If none were defined, ask: what response time would be unacceptable for your users?
+- **Error details:** Did the errors have a specific message? (timeout, connection refused, 5xx, assertion failure) — The error type changes the diagnosis.
+
+### Group C — Ask when the output shows something suspicious
+
+Ask these only when the analysis reveals a finding that needs more context:
+
+- **Infrastructure data:** Was any monitoring active during the test? (CPU, memory, DB metrics, APM) — Without this, bottleneck hypotheses cannot be confirmed.
+- **Baseline:** Do you have results from a previous run of the same test? — Required for regression detection.
+- **Infra events:** Did anything unusual happen during the test? (deployment, restart, alert, external incident)
+
+**Rule:** Never proceed to Step 2 with only average/mean data and no percentiles, and no SLA targets.
+If the user cannot provide SLAs, use industry defaults: p95 < 1000ms, error rate < 1%, and state this assumption explicitly in the report.
 
 **Only load [references/TOOL-REPORT-FORMATS.md](references/TOOL-REPORT-FORMATS.md)
 when the user pastes raw output from k6, Gatling, Locust, JMeter, or Artillery and

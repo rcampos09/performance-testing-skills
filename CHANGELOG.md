@@ -171,7 +171,18 @@ Added test type tags to metadata.
 
 ## performance-report-analysis
 
-### [1.1] — 2026-03-15 (deep improvement — pre-benchmark)
+### [1.2] — 2026-03-16 (active questioning flow)
+
+**Change:** Replaced static data checklist in Step 1 with an active questioning flow grouped in 3 logical categories:
+- **Group A** (always): tool used, did the test complete, who reads the report
+- **Group B** (if missing from pasted output): percentiles vs mean, SLA targets, error message type
+- **Group C** (when suspicious findings appear): infra monitoring, baseline availability, infra events during test
+
+**Key rule added:** Never proceed to analysis with only mean/average data and no percentiles. If no SLAs are defined, apply industry defaults (p95 < 1000ms, error rate < 1%) and declare the assumption explicitly.
+
+**Why:** Engineers arrive with a report but don't know what context is needed for a good analysis. The skill now drives the conversation from the "I already ran the test" perspective — not from test planning.
+
+### [1.1] — 2026-03-16 (deep improvement — pre-benchmark)
 
 **Changes vs. v1.0:**
 
@@ -232,6 +243,6 @@ _Final baseline after all skill-creator iterations (2026-03-15)._
 | `gatling-best-practices` | v1.1 | 1 | 95.8% ± 8% | 59.8% ± 31% | +36pp |
 | `performance-testing-strategy` | v1.3 | 2 | **100%** | 73.4% | +26.6pp |
 | `locust-best-practices` | v1.2 | 2 | **100%** | 91.4% | +8.6pp |
-| `performance-report-analysis` | v1.1 | — | not yet benchmarked | — | — |
+| `performance-report-analysis` | v1.2 | — | not yet benchmarked | — | — |
 
 > ⚠️ **Statistical note:** Pass rate deltas under ~20pp require N ≥ 3 runs per eval to be reliable. Results with high variance (±10%+) should be interpreted with caution.
